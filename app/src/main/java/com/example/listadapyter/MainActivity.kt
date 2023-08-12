@@ -2,29 +2,81 @@ package com.example.listadapyter
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.listadapyter.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private val viewModel: MyViewModel by viewModels()
+    private val adapter = MyModelRecyclerAdapter()
 
-
-    val list = listOf<MyModel>(MyModel(1,"a"),MyModel(2,"b"),MyModel(3,"c"),MyModel(1,"d"))
     lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        recycler()
+        observe()
+        observeAdapterState()
+        viewModel.produceList()
+
 
 
     }
-    fun recycler(){
-        val adapter = MyModelRecyclerAdapter()
-       binding.recyclerView.apply {
+
+    private fun observe() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect {
+                        recycler(it)
+//                        adapter.notifyItemRemoved(it.)
+                    }
+
+            }
+        }
+    }
+    private fun recycler(list: List<MyModel>) {
+
+        binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(applicationContext)
         }
-        binding.recyclerView.adapter=adapter
+        binding.recyclerView.adapter = adapter
         adapter.submitList(list)
+        click()
+    }
+
+
+    private fun observeAdapterState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.myAdapter.collect {
+                    when (it) {
+                        is MyAdapter.Idle -> {}
+                        is MyAdapter.Remove -> {
+                            adapter.notifyItemRemoved(it.position)
+                        }
+
+                        is MyAdapter.Add -> {
+
+                            // adapter.notifyItemInserted(viewModel.userList.value.lastIndex)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+    private fun click() {
+        adapter.bind {
+            viewModel.deleteItem(it)
+
+
+        }
     }
 }

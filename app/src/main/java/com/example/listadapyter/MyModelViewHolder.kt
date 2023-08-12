@@ -1,11 +1,9 @@
 package com.example.listadapyter
 
-import android.view.View
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.listadapyter.databinding.ModelViewBinding
 
-class MyModelVievHolder(val binding: ModelViewBinding):RecyclerView.ViewHolder(binding.root) {
+class MyModelViewHolder(val binding: ModelViewBinding):RecyclerView.ViewHolder(binding.root) {
 //    var modelName:TextView = itemView.findViewById(R.id.name)
 //    var modelId:TextView = itemView.findViewById(R.id.id)
 //    var currentModel:MyModel? = null
